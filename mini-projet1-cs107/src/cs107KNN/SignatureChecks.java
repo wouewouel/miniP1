@@ -2,7 +2,7 @@ package cs107KNN;
 
 class SignatureChecks {
 
-    byte t = 0; 
+    byte t = 0;
     int extractIntRes = KNN.extractInt(t, t, t, t);
 	byte[][][] parseIDXimagesRes = KNN.parseIDXimages(new byte [] {});
 	byte[] parseIDXlabelsRes = KNN.parseIDXlabels(new byte [] {});
