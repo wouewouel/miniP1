@@ -25,8 +25,14 @@ public class KNN {
 	 * @return the integer having form [ b31ToB24 | b23ToB16 | b15ToB8 | b7ToB0 ]
 	 */
 	public static int extractInt(byte b31ToB24, byte b23ToB16, byte b15ToB8, byte b7ToB0) {
-		// TODO: Implémenter
-		return 0;
+		
+		String nbMagique = Helpers.byteToBinaryString(b31ToB24) + Helpers.byteToBinaryString(b23ToB16)
+								+ Helpers.byteToBinaryString(b15ToB8) + Helpers.byteToBinaryString(b7ToB0);
+		
+		int nombreMagique = Integer.parseInt(nbMagique , 2);
+	
+		
+		return nombreMagique;
 	}
 
 	/**
