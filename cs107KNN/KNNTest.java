@@ -4,10 +4,8 @@ import java.util.Arrays;
 
 public class KNNTest {
 	public static void main(String[] args) {
-		// TODO: Adapt path to data files in parsing test
-		// Decommentez au fur et Ã  mesure que vous implÃ©mentez
-		//extractIntTest();
-		//parsingTest();
+
+		parsingTest();
 		//euclideanDistanceTest();
 		//invertedSimilarityTest();
 		//quicksortTest();
@@ -19,26 +17,24 @@ public class KNNTest {
 
 	public static void extractIntTest() {
 		byte b1 = 40; // 00101000
-		byte b2 = 120; // 00010100
-		byte b3 = 70; // 00001010
-		byte b4 = -117; // 00000101
+		byte b2 = 20; // 00010100
+		byte b3 = 10; // 00001010
+		byte b4 = 5; // 00000101
 
-		String expected = Helpers.byteToBinaryString(b1) +
-			Helpers.byteToBinaryString(b2) +
-			Helpers.byteToBinaryString(b3) +
-			Helpers.byteToBinaryString(b4);
+		// [00101000 | 00010100 | 00001010 | 00000101] = 672401925
+		int result = KNN.extractInt(b1, b2, b3, b4);
+		System.out.println(result);
 
-		int obtained = KNN.extractInt(b1, b2, b3, b4);
-
-		System.out.println("=== Test extractInt ===");
-		System.out.println("Entier attendu:\t " + expected);
-		System.out.println("extractInt produit:\t " + "00101000011110000100011010001011");
-	}
+		String bits = "10000001";
+		System.out.println("La séquence de bits " + bits + "\n\tinterprétée comme byte non signé donne "
+				+ Helpers.interpretUnsigned(bits) + "\n\tinterpretée comme byte signé donne "
+				+ Helpers.interpretSigned(bits));
+		}
 
 	public static void parsingTest() {
 		System.out.println("=== Test parsing ===");
-		byte[][][] images = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/provided/10-per-digit_images_train"));
-		byte[] labels = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/provided/10-per-digit_labels_train"));
+		byte[][][] images = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10-per-digit_images_train"));
+		byte[] labels = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10-per-digit_labels_train"));
 
 		System.out.println("Number of images: " + images.length);
 		System.out.println("Height: " + images[0].length);
@@ -54,7 +50,7 @@ public class KNNTest {
 		byte[][] b = new byte[][] {{3, 3}, {4, 4}};
 
 		System.out.println("Distance calculÃ©e: " + KNN.squaredEuclideanDistance(a, b));
-		System.out.println("Distance attendue: 4.0");
+		System.out.println("Distance attendue: 16.0");
 	}
 
 	public static void invertedSimilarityTest() {

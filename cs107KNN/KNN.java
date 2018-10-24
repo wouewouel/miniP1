@@ -2,28 +2,30 @@ package cs107KNN;
 
 public class KNN {
 	public static void main(String[] args) {
-		byte b1 = 40; // 00101000
-		byte b2 = 20; // 00010100
-		byte b3 = 10; // 00001010
-		byte b4 = 5; // 00000101
 
-		// [00101000 | 00010100 | 00001010 | 00000101] = 672401925
-		int result = extractInt(b1, b2, b3, b4);
-		System.out.println(result);
 
-		String bits = "10000001";
-		System.out.println("La sÃ©quence de bits " + bits + "\n\tinterprÃ©tÃ©e comme byte non signÃ© donne "
-				+ Helpers.interpretUnsigned(bits) + "\n\tinterpretÃ©e comme byte signÃ© donne "
-				+ Helpers.interpretSigned(bits));
+		// Charge les étiquettes depuis le disque 
+		byte[] labelsRaw = Helpers.readBinaryFile("datasets/10-per-digit_labels_train"); 
+		// Parse les étiquettes 
+		byte[] labelsTrain = parseIDXlabels(labelsRaw); 
+		// Affiche le nombre de labels 
+		System.out.println(labelsTrain.length); 
+		// Affiche le premier label 
+		System.out.println(labelsTrain[0]);
+		// Charge les images depuis le disque 
+		byte[] imagesRaw = Helpers.readBinaryFile("datasets/10-per-digit_images_train"); 
+		// Parse les images 
+		byte[][][] imagesTrain = parseIDXimages(imagesRaw); 
+		// Affiche les dimensions des images 
+		System.out.println("Number of images : " + imagesTrain.length); 
+		System.out.println("height : " + imagesTrain[0].length); 
+		System.out.println("width : " + imagesTrain[0][0].length);
+		// Affiche les 30 premières images et leurs étiquettes 
+		Helpers.show("Test", imagesTrain, labelsTrain, 2, 15);
+
 	}
 
-	/**
-	 * Composes four bytes into an integer using big endian convention.
-	 *
-	 * @param bXToBY The byte containing the bits to store between positions X and Y
-	 * 
-	 * @return the integer having form [ b31ToB24 | b23ToB16 | b15ToB8 | b7ToB0 ]
-	 */
+	/**************************************************************************************/
 	public static int extractInt(byte b31ToB24, byte b23ToB16, byte b15ToB8, byte b7ToB0) {
 		
 		String nbMagique = Helpers.byteToBinaryString(b31ToB24) + Helpers.byteToBinaryString(b23ToB16)
@@ -34,31 +36,47 @@ public class KNN {
 		
 		return nombreMagique;
 	}
-
-	/**
-	 * Parses an IDX file containing images
-	 *
-	 * @param data the binary content of the file
-	 *
-	 * @return A tensor of images
-	 */
+	/**************************************************************************************/
 	public static byte[][][] parseIDXimages(byte[] data) {
-		// TODO: ImplÃ©menter
-		return null;
+		//Regarder si on ne met pas null à la place	!!!!
+		assert data != null;
+		assert (data.length >= 16);												//on vérifie qu'on ne fera pas de 
+		int nbmagique = extractInt(data [0],data [1],data [2],data [3]);		//segmentation fault
+		assert (nbmagique == 2051); 											//si nbmaqigue!=2051 ça envoi une erreur
+		
+		int nbImages = extractInt(data [4],data [5],data [6],data [7]);			//nb image
+		int nbLignes = extractInt(data [8],data [9],data [10],data [11]);		//nb lignes/image
+		int nbColonnes = extractInt(data [12],data [13],data [14],data [15]); 	//nb colonnes/image
+		
+		assert (data.length == (16 + nbImages*nbLignes*nbColonnes) );			//on vérifie que la donnée est correcte
+		byte [][][] tenseur = new byte	[nbImages][nbLignes][nbColonnes];
+		for(int i= 0; i < nbImages; ++i ) {
+			for(int j=0; j< nbLignes; ++j ) {
+				for(int k=0; k < nbColonnes; ++k) {
+					tenseur[i][j][k] = (byte) ((data[16+ i*nbLignes*nbColonnes + j*nbColonnes +k] & 0xFF) - 128) ;
+				}
+			}
+		}
+
+		return tenseur;
 	}
 
-	/**
-	 * Parses an idx images containing labels
-	 *
-	 * @param data the binary content of the file
-	 *
-	 * @return the parsed labels
-	 */
+	/**************************************************************************************/
 	public static byte[] parseIDXlabels(byte[] data) {
-		// TODO: ImplÃ©menter
-		return null;
+		assert data != null;
+		assert (data.length >= 8);												//on vérifie qu'on ne fera pas de 
+		int nbmagique = extractInt(data [0],data [1],data [2],data [3]);		//segmentation fault
+		assert (nbmagique == 2049); 											//si nbmaqigue!=2049 ça envoi une erreur
+		
+		int nbEtiq = extractInt(data [4],data [5],data [6],data [7]);			//nb étiquettes
+		assert (data.length == (8 + nbEtiq) );									//on vérifie que la donnée est correcte
+		byte [] tab = new byte	[nbEtiq];
+		for(int i=0; i < nbEtiq; ++i) {
+			tab[i] = data[8+i];
+		}
+		return tab;
 	}
-
+	/**************************************************************************************/
 	/**
 	 * @brief Computes the squared L2 distance of two images
 	 * 
