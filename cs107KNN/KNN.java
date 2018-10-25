@@ -26,14 +26,12 @@ public class KNN {
 	}
 
 	/**************************************************************************************/
-	public static int extractInt(byte b31ToB24, byte b23ToB16, byte b15ToB8, byte b7ToB0) {
-		
-		String nbMagique = Helpers.byteToBinaryString(b31ToB24) + Helpers.byteToBinaryString(b23ToB16)
-								+ Helpers.byteToBinaryString(b15ToB8) + Helpers.byteToBinaryString(b7ToB0);
-		
-		int nombreMagique = Integer.parseInt(nbMagique , 2);
-	
-		
+	public static int extractInt(byte b31ToB24, byte b23ToB16, byte b15ToB8, byte b7ToB0) {	
+		int a = b31ToB24<<24;			//on utilise pas de String car ça prend trop de place
+		int b = b23ToB16<<16;			//l'opérateur <<n décale tout les 1 de ta bitestring vers la gauche
+		int c = b15ToB8<<8;				//Il multiplie par 2^n en quelque sorte
+		int d = b7ToB0;
+		int nombreMagique = a + b + c + d;
 		return nombreMagique;
 	}
 	/**************************************************************************************/
@@ -76,19 +74,27 @@ public class KNN {
 		}
 		return tab;
 	}
-	/**************************************************************************************/
-	/**
-	 * @brief Computes the squared L2 distance of two images
-	 * 
-	 * @param a, b two images of same dimensions
-	 * 
-	 * @return the squared euclidean distance between the two images
-	 */
+/*****************************************************************************************/
 	public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
-		// TODO: ImplÃ©menter
-		return 0f;
-	}
-
+	        
+	        // Calcul de la distance euclidienne entre 2 images 
+	        
+	        float Distance = 0 ;
+	        
+	        for (int i =0 ; i< a.length ; i++) {
+	            
+	            for (int j =0 ; j < a[i].length ; j++) {
+	                
+	                Distance = (a[i][j] - b[i][j])*(a[i][j] - b[i][j]) + Distance ;	//Est-ce qu'on est sur que ça ne 
+	                																//déborde pas ?
+	            }    
+	            
+	        }
+	        
+	        
+	        return Distance ;
+	    }
+/*****************************************************************************************/
 	/**
 	 * @brief Computes the inverted similarity between 2 images.
 	 * 

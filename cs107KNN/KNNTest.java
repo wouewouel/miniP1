@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 public class KNNTest {
 	public static void main(String[] args) {
-
-		parsingTest();
-		//euclideanDistanceTest();
+		extractIntTest();
+		//parsingTest();
+		//squaredEuclideanDistanceTest();
 		//invertedSimilarityTest();
 		//quicksortTest();
 		//indexOfMaxTest();
@@ -22,14 +22,18 @@ public class KNNTest {
 		byte b4 = 5; // 00000101
 
 		// [00101000 | 00010100 | 00001010 | 00000101] = 672401925
-		int result = KNN.extractInt(b1, b2, b3, b4);
-		System.out.println(result);
+		
+		String expected = Helpers.byteToBinaryString(b1) +
+			Helpers.byteToBinaryString(b2) +
+			Helpers.byteToBinaryString(b3) +
+			Helpers.byteToBinaryString(b4);
 
-		String bits = "10000001";
-		System.out.println("La séquence de bits " + bits + "\n\tinterprétée comme byte non signé donne "
-				+ Helpers.interpretUnsigned(bits) + "\n\tinterpretée comme byte signé donne "
-				+ Helpers.interpretSigned(bits));
-		}
+		int obtained = KNN.extractInt(b1, b2, b3, b4);
+
+		System.out.println("=== Test extractInt ===");
+		System.out.println("Entier attendu:\t \t " + Integer.parseInt(expected,2));
+		System.out.println("extractInt produit:\t " + obtained );//"00101000000101000000101000000101"
+	}
 
 	public static void parsingTest() {
 		System.out.println("=== Test parsing ===");
