@@ -31,21 +31,20 @@ public class KNN {
 		int b = b23ToB16<<16;			//l'opérateur <<n décale tout les 1 de ta bitestring vers la gauche
 		int c = b15ToB8<<8;				//Il multiplie par 2^n en quelque sorte
 		int d = b7ToB0;
-		int nombreMagique = a + b + c + d;
+		int nombreMagique = a | b | c | d;	//optimisation avec le bitwise "ou"
 		return nombreMagique;
 	}
 	/**************************************************************************************/
 	public static byte[][][] parseIDXimages(byte[] data) {
-		//Regarder si on ne met pas null à la place	!!!!
-		assert data != null;
-		assert (data.length >= 16);												//on vérifie qu'on ne fera pas de 
+		if (data == null)		 { 	return null;	};
+		if (data.length < 16)	 {	return null;	};							//on vérifie qu'on ne fera pas de 
 		int nbmagique = extractInt(data [0],data [1],data [2],data [3]);		//segmentation fault
-		assert (nbmagique == 2051); 											//si nbmaqigue!=2051 ça envoi une erreur
+		if (nbmagique != 2051)	 {	return null;	}; 							//si nbmaqigue!=2051 ça renvoi null
 		
 		int nbImages = extractInt(data [4],data [5],data [6],data [7]);			//nb image
 		int nbLignes = extractInt(data [8],data [9],data [10],data [11]);		//nb lignes/image
 		int nbColonnes = extractInt(data [12],data [13],data [14],data [15]); 	//nb colonnes/image
-		
+		//pour cette vérif il y a un vrai problème que fait on ?
 		assert (data.length == (16 + nbImages*nbLignes*nbColonnes) );			//on vérifie que la donnée est correcte
 		byte [][][] tenseur = new byte	[nbImages][nbLignes][nbColonnes];
 		for(int i= 0; i < nbImages; ++i ) {
@@ -61,22 +60,23 @@ public class KNN {
 
 	/**************************************************************************************/
 	public static byte[] parseIDXlabels(byte[] data) {
-		assert data != null;
-		assert (data.length >= 8);												//on vérifie qu'on ne fera pas de 
-		int nbmagique = extractInt(data [0],data [1],data [2],data [3]);		//segmentation fault
-		assert (nbmagique == 2049); 											//si nbmaqigue!=2049 ça envoi une erreur
+		if (data == null)		 { 	return null;	};							//on vérifie qu'on ne fera pas de 
+		if (data.length < 8)	 {	return null;	};							//segmentation fault
+		int nbmagique = extractInt(data [0],data [1],data [2],data [3]);		
+		if (nbmagique != 2049)	 {	return null;	};							//si nbmaqigue!=2049 ça renvoi null
 		
 		int nbEtiq = extractInt(data [4],data [5],data [6],data [7]);			//nb étiquettes
+		//pour cette vérif il y a un vrai problème que fait on ?
 		assert (data.length == (8 + nbEtiq) );									//on vérifie que la donnée est correcte
-		byte [] tab = new byte	[nbEtiq];
-		for(int i=0; i < nbEtiq; ++i) {
+		byte [] tab = new byte	[nbEtiq]; 
+		for(int i=0; i < nbEtiq; ++i) {  
 			tab[i] = data[8+i];
 		}
-		return tab;
+		return tab; 
 	}
 /*****************************************************************************************/
 	public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
-	        
+	        //vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
 	        // Calcul de la distance euclidienne entre 2 images 
 	        
 	        float Distance = 0 ;
@@ -85,8 +85,8 @@ public class KNN {
 	            
 	            for (int j =0 ; j < a[i].length ; j++) {
 	                
-	                Distance = (a[i][j] - b[i][j])*(a[i][j] - b[i][j]) + Distance ;	//Est-ce qu'on est sur que ça ne 
-	                																//déborde pas ?
+	                Distance = (a[i][j] - b[i][j])*(a[i][j] - b[i][j]) + Distance ;	
+	                //la somme entre byte est directement convertie en int donc pas de débordement #koul 
 	            }    
 	            
 	        }
@@ -95,68 +95,149 @@ public class KNN {
 	        return Distance ;
 	    }
 /*****************************************************************************************/
-	/**
-	 * @brief Computes the inverted similarity between 2 images.
-	 * 
-	 * @param a, b two images of same dimensions
-	 * 
-	 * @return the inverted similarity between the two images
-	 */
-	public static float invertedSimilarity(byte[][] a, byte[][] b) {
-		// TODO: ImplÃ©menter
-		return 0f;
-	}
+    // Calcul de la moyenne des valeurs des pixels de 2 images
+    
+    public static float moyenne(byte[][] a) {
+        float pixels = 0 ;
+        
+        // somme des valeurs des pixels
+        
+            for (int i =0 ; i < a.length ; i++) {
+            
+                for (int j =0 ; j < a[i].length ; j++) {
+                
+                    pixels = pixels + a[i][j] ;
+                }
+            
+            }
+        
+        //division par le nombre de pixels
+        
+        float moy = pixels / (a.length * a[0].length);
+        
+        return moy ;
+          
+    }
+/*****************************************************************************************/
 
-	/**
-	 * @brief Quicksorts and returns the new indices of each value.
-	 * 
-	 * @param values the values whose indices have to be sorted in non decreasing
-	 *               order
-	 * 
-	 * @return the array of sorted indices
-	 * 
-	 *         Example: values = quicksortIndices([3, 7, 0, 9]) gives [2, 0, 1, 3]
-	 */
+    public static float invertedSimilarity(byte[][] a, byte[][] b) {
+        float A = moyenne(a);
+        float B = moyenne(b);
+        float denompart1 = 0 ;
+        float denompart2 =0 ;
+        
+        // calcul des 2 facteurs du denominateur
+        for(int i =0 ; i < a.length ; ++i) {
+            
+            for(int j=0 ; j < a[i].length ; j++) {
+                
+                denompart1 = denompart1 + (a[i][j] - A)*(a[i][j] - A);
+                denompart2 = denompart2 + (b[i][j] - B)*(b[i][j] - B);
+            }
+            
+        }
+        
+        // calcul du denominateur
+        float denominateur = (float) Math.sqrt(denompart1 * denompart2);
+        
+            if (denominateur ==0) {
+                return 2;
+            }
+        
+        float numerateur = 0;
+        
+        // calcul du numerateur
+        
+        for (int i =0 ; i < a.length ; i++) {
+            
+            for (int j =0 ; j< a[i].length ; j++) {
+                
+                numerateur = numerateur + (a[i][j] - A)*(b[i][j] - B) ;
+                
+            }
+            
+        }
+         
+        // calcul total
+        
+        float SI = 1 - (numerateur / denominateur) ;
+        
+        return SI;												//optimisation
+    }
+
+/********************************************************************************************/
 	public static int[] quicksortIndices(float[] values) {
-		// TODO: ImplÃ©menter
-		return null;
+       
+		//vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
+		int low = 0;
+		int high = values.length -1;
+		
+		int[] indices = new int[values.length];
+		for(int i = 0; i<values.length ; ++i) {
+			indices[i]=i;									//initialisation du tableau {0,1,2....}
+		}
+	
+		quicksortIndices(values, indices, low, high); 	//on fait appelle à l'autre fonction : c'est plus compacte	
+		return indices;					
+		//si le k-eme et le k+1-eme valeur sont les mêmes (peu probable) et que les images respéctives ont des labels
+		//différents, que doit on faire ? avec le quick sort il prendra l'indices le plus proche du k-1-eme donc c'est 
+		//plus du hasard qu'autre chose
 	}
 
-	/**
-	 * @brief Sorts the provided values between two indices while applying the same
-	 *        transformations to the array of indices
-	 * 
-	 * @param values  the values to sort
-	 * @param indices the indices to sort according to the corresponding values
-	 * @param         low, high are the **inclusive** bounds of the portion of array
-	 *                to sort
-	 */
+/***************************************************************************************************/
+	
 	public static void quicksortIndices(float[] values, int[] indices, int low, int high) {
-		// TODO: ImplÃ©menter
+        //vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
+		int l = low;								
+		int h = high;
+		float pivot = values[low];
+		
+		while(l<=h) {
+			if(values[l] <pivot) {					//on veut comparer des float 
+				++l;
+			}else {
+				if(values[h]>pivot) {
+					--h;
+				}else {
+					swap(l,h,values,indices);
+					++l;
+					--h; 
+					}
+			}
+		}
+		
+		if(low < h) {
+			quicksortIndices(values, indices, low, h);
+		}
+		if(high > l) {
+			quicksortIndices(values, indices, l, high);
+		}
 	}
 
-	/**
-	 * @brief Swaps the elements of the given arrays at the provided positions
-	 * 
-	 * @param         i, j the indices of the elements to swap
-	 * @param values  the array floats whose values are to be swapped
-	 * @param indices the array of ints whose values are to be swapped
-	 */
+/*********************************************************************************************/
 	public static void swap(int i, int j, float[] values, int[] indices) {
-		// TODO: ImplÃ©menter
+        //vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
+		float a = values[i];
+		values[i] = values[j];
+		values[j] = a;
+		
+		int b = indices[i];
+		indices[i] = indices[j];
+		indices[j] = b;
 	}
-
-	/**
-	 * @brief Returns the index of the largest element in the array
-	 * 
-	 * @param array an array of integers
-	 * 
-	 * @return the index of the largest integer
-	 */
+/*********************************************************************************************/
 	public static int indexOfMax(int[] array) {
-		// TODO: ImplÃ©menter
-		return 0;
+//		if(array == null) {		return 0; };			//pas bon !!!
+		int index=0;
+		int max	=array[0];
+		for (int i = 0; i< array.length ; ++i ) {
+			if( array[i]>max) {
+				index = i;
+			}
+		}
+		return index;
 	}
+/*********************************************************************************************/
 
 	/**
 	 * The k first elements of the provided array vote for a label

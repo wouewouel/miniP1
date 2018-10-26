@@ -4,21 +4,21 @@ import java.util.Arrays;
 
 public class KNNTest {
 	public static void main(String[] args) {
-		extractIntTest();
+		//extractIntTest();
 		//parsingTest();
 		//squaredEuclideanDistanceTest();
-		//invertedSimilarityTest();
-		//quicksortTest();
+		invertedSimilarityTest();
+		//quicksortTest(); 
 		//indexOfMaxTest();
 		//electLabelTest();
-		//knnClassifyTest();
-		//accuracyTest();
+		//knnClassifyTest();  
+		//accuracyTest(); 
 	}
 
 	public static void extractIntTest() {
 		byte b1 = 40; // 00101000
 		byte b2 = 20; // 00010100
-		byte b3 = 10; // 00001010
+		byte b3 = 10; // 00001010 
 		byte b4 = 5; // 00000101
 
 		// [00101000 | 00010100 | 00001010 | 00000101] = 672401925
@@ -58,20 +58,20 @@ public class KNNTest {
 	}
 
 	public static void invertedSimilarityTest() {
-		System.out.println("=== Test similaritÃ© inversÃ©e ===");
+		System.out.println("=== Test similarité inversée ===");
 		byte[][] a = new byte[][] {{1, 1}, {1, 2}};
 		byte[][] b = new byte[][] {{50, 50}, {50, 100}};
 
-		System.out.println("Distance calculÃ©e: " + KNN.invertedSimilarity(a, b));
+		System.out.println("Distance calculée: " + KNN.invertedSimilarity(a, b));
 		System.out.println("Distance attendue: 0.0");
 	}
 
 	public static void quicksortTest() {
 		System.out.println("=== Test quicksort ===");
-		float[] data = new float[] {3, 7, 0, 9};
+		float[] data = new float[] {3, 1, -1, 0, 9};
 		int[] result = KNN.quicksortIndices(data);
 
-		System.out.println("Indices triÃ©s: " + Arrays.toString(result));
+		System.out.println("Indices triés: " + Arrays.toString(result));
 	}
 
 	public static void indexOfMaxTest() {
