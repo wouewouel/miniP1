@@ -21,18 +21,18 @@ public class KNN {
 		System.out.println("height : " + imagesTrain[0].length); 
 		System.out.println("width : " + imagesTrain[0][0].length);
 		// Affiche les 30 premières images et leurs étiquettes 
-		Helpers.show("Test", imagesTrain, labelsTrain, 2, 15);
+		Helpers.show("Test", imagesTrain, labelsTrain, 10, 15);
 
 	}
 
 	/**************************************************************************************/
 	public static int extractInt(byte b31ToB24, byte b23ToB16, byte b15ToB8, byte b7ToB0) {	
-		int a = b31ToB24<<24;			//on utilise pas de String car ça prend trop de place
-		int b = b23ToB16<<16;			//l'opérateur <<n décale tout les 1 de ta bitestring vers la gauche
-		int c = b15ToB8<<8;				//Il multiplie par 2^n en quelque sorte
-		int d = b7ToB0;
-		int nombreMagique = a | b | c | d;	//optimisation avec le bitwise "ou"
-		return nombreMagique;
+		int a = (b31ToB24& 0xFF)<<24 	;			//on utilise pas de String car ça prend trop de place
+		int b = (b23ToB16& 0xFF)<<16 	;			//l'opérateur <<n décale tout les 1 de ta bitestring vers la gauche
+		int c = (b15ToB8& 0xFF)<<8 		;			//Il multiplie par 2^n en quelque sorte
+		int d = (b7ToB0	& 0xFF)			;
+
+		return (a | b | c | d);						//optimisation avec le bitwise "ou"
 	}
 	/**************************************************************************************/
 	public static byte[][][] parseIDXimages(byte[] data) {
@@ -76,14 +76,12 @@ public class KNN {
 	}
 /*****************************************************************************************/
 	public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
-	        //vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
-	        // Calcul de la distance euclidienne entre 2 images 
-	        
+		//pas de vérification des tableaux selon l'assistant principal
 	        float Distance = 0 ;
-	        
+	     // Calcul de la distance euclidienne entre 2 images     
 	        for (int i =0 ; i< a.length ; i++) {
 	            
-	            for (int j =0 ; j < a[i].length ; j++) {
+	            for (int j =0 ; j < a[i].length ; j++) {		//pourquoi a[i] et pas b[i] ?
 	                
 	                Distance = (a[i][j] - b[i][j])*(a[i][j] - b[i][j]) + Distance ;	
 	                //la somme entre byte est directement convertie en int donc pas de débordement #koul 
@@ -95,9 +93,7 @@ public class KNN {
 	        return Distance ;
 	    }
 /*****************************************************************************************/
-    // Calcul de la moyenne des valeurs des pixels de 2 images
-    
-    public static float moyenne(byte[][] a) {
+    public static float moyenne(byte[][] a) {			// Calcul de la moyenne des valeurs des pixels de 2 images
         float pixels = 0 ;
         
         // somme des valeurs des pixels
@@ -111,16 +107,14 @@ public class KNN {
             
             }
         
-        //division par le nombre de pixels
-        
-        float moy = pixels / (a.length * a[0].length);
-        
-        return moy ;
+            													//division par le nombre de pixels   
+        return (pixels / (a.length * a[0].length));				//pas besoin de créer une variable float
           
     }
 /*****************************************************************************************/
 
     public static float invertedSimilarity(byte[][] a, byte[][] b) {
+		//pas de vérification des tableaux selon l'assistant principal
         float A = moyenne(a);
         float B = moyenne(b);
         float denompart1 = 0 ;
@@ -167,8 +161,7 @@ public class KNN {
 
 /********************************************************************************************/
 	public static int[] quicksortIndices(float[] values) {
-       
-		//vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
+		//pas de vérification des tableaux selon l'assistant principal
 		int low = 0;
 		int high = values.length -1;
 		
@@ -187,7 +180,7 @@ public class KNN {
 /***************************************************************************************************/
 	
 	public static void quicksortIndices(float[] values, int[] indices, int low, int high) {
-        //vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
+		//pas de vérification des tableaux selon l'assistant principal
 		int l = low;								
 		int h = high;
 		float pivot = values[low];
@@ -216,7 +209,7 @@ public class KNN {
 
 /*********************************************************************************************/
 	public static void swap(int i, int j, float[] values, int[] indices) {
-        //vérification des tableaux ? l'assistant a dit qu'on suppose qu'ils sont bon et vérifiera après
+		//pas de vérification des tableaux selon l'assistant principal
 		float a = values[i];
 		values[i] = values[j];
 		values[j] = a;
@@ -227,46 +220,49 @@ public class KNN {
 	}
 /*********************************************************************************************/
 	public static int indexOfMax(int[] array) {
-//		if(array == null) {		return 0; };			//pas bon !!!
+		//pas de vérification des tableaux selon l'assistant principal
 		int index=0;
 		int max	=array[0];
 		for (int i = 0; i< array.length ; ++i ) {
-			if( array[i]>max) {
+			if( array[i]>max) {							// pas >= car on prend la première dans l'ordre
 				index = i;
+				max = array[i];
 			}
 		}
 		return index;
 	}
 /*********************************************************************************************/
 
-	/**
-	 * The k first elements of the provided array vote for a label
-	 *
-	 * @param sortedIndices the indices sorted by non-decreasing distance
-	 * @param labels        the labels corresponding to the indices
-	 * @param k             the number of labels asked to vote
-	 *
-	 * @return the winner of the election
-	 */
 	public static byte electLabel(int[] sortedIndices, byte[] labels, int k) {
-		// TODO: ImplÃ©menter
-		return 0;
+		int[] kvotes = new int[10];						//c'est un tableau d'int car peut être qu'il y aura beaucoup
+		for(int i=0; i<k; ++i) {						//de votes : mais à vérifier car byte est plus sympa
+			
+			++ kvotes[labels[sortedIndices[i]]] ;		//on veut ce qu'il y a sur les k 1ere étiquettes triées
+		
+		}
+		return (byte) indexOfMax(kvotes);				//on veut l'étiquette du + grand index
+		//je pense qu'on peut faire mieux que ça !
 	}
+/*********************************************************************************************/
 
-	/**
-	 * Classifies the symbol drawn on the provided image
-	 *
-	 * @param image       the image to classify
-	 * @param trainImages the tensor of training images
-	 * @param trainLabels the list of labels corresponding to the training images
-	 * @param k           the number of voters in the election process
-	 *
-	 * @return the label of the image
-	 */
 	public static byte knnClassify(byte[][] image, byte[][][] trainImages, byte[] trainLabels, int k) {
-		// TODO: ImplÃ©menter
-		return 0;
-	}
+		//pas de vérification des tableaux selon l'assistant principal
+		float[] values = new float[trainImages.length];
+		
+		for(int i=0; i< trainImages.length; ++i) {
+			values[i] = invertedSimilarity(image, trainImages[i]);		//on cré le tableau des distances
+		}
+		
+		return electLabel(quicksortIndices(values), trainLabels, k);
+		//	public static byte electLabel(int[] sortedIndices, byte[] labels, int k) {
+
+		//public static int[] quicksortIndices(float[] values) {
+		
+		//public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
+
+		//public static float invertedSimilarity(byte[][] a, byte[][] b) {
+		
+		}
 
 	/**
 	 * Computes accuracy between two arrays of predictions
