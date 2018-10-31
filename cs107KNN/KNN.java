@@ -1,28 +1,10 @@
 package cs107KNN;
 
+import java.util.Arrays;
+
 public class KNN {
 	public static void main(String[] args) {
-
-
-		// Charge les étiquettes depuis le disque 
-		byte[] labelsRaw = Helpers.readBinaryFile("datasets/10-per-digit_labels_train"); 
-		// Parse les étiquettes 
-		byte[] labelsTrain = parseIDXlabels(labelsRaw); 
-		// Affiche le nombre de labels 
-		System.out.println(labelsTrain.length); 
-		// Affiche le premier label 
-		System.out.println(labelsTrain[0]);
-		// Charge les images depuis le disque 
-		byte[] imagesRaw = Helpers.readBinaryFile("datasets/10-per-digit_images_train"); 
-		// Parse les images 
-		byte[][][] imagesTrain = parseIDXimages(imagesRaw); 
-		// Affiche les dimensions des images 
-		System.out.println("Number of images : " + imagesTrain.length); 
-		System.out.println("height : " + imagesTrain[0].length); 
-		System.out.println("width : " + imagesTrain[0][0].length);
-		// Affiche les 30 premières images et leurs étiquettes 
-		Helpers.show("Test", imagesTrain, labelsTrain, 10, 15);
-
+		KNNTest.finalTest();
 	}
 
 	/**************************************************************************************/
@@ -250,7 +232,7 @@ public class KNN {
 		float[] values = new float[trainImages.length];
 		
 		for(int i=0; i< trainImages.length; ++i) {
-			values[i] = invertedSimilarity(image, trainImages[i]);		//on cré le tableau des distances
+			values[i] = invertedSimilarity(image, trainImages[i]);		//nous créons le tableau des distances
 		}
 		
 		return electLabel(quicksortIndices(values), trainLabels, k);
@@ -263,17 +245,22 @@ public class KNN {
 		//public static float invertedSimilarity(byte[][] a, byte[][] b) {
 		
 		}
-
-	/**
-	 * Computes accuracy between two arrays of predictions
-	 * 
-	 * @param predictedLabels the array of labels predicted by the algorithm
-	 * @param trueLabels      the array of true labels
-	 * 
-	 * @return the accuracy of the predictions. Its value is in [0, 1]
-	 */
-	public static double accuracy(byte[] predictedLabels, byte[] trueLabels) {
-		// TODO: ImplÃ©menter
-		return 0d;
-	}
+/*********************************************************************************************/
+public static double accuracy(byte[] predictedLabels, byte[] trueLabels) {
+        
+        double n = predictedLabels.length;
+        double accuracy =0. ;
+        
+        for (int i = 0 ; i < n ; i++) {
+            if ( predictedLabels[i] == trueLabels[i]) {
+                accuracy = accuracy +1 ;
+            }
+            
+        }
+        accuracy = accuracy /n ; 
+        
+        return accuracy ;
+    }
 }
+
+

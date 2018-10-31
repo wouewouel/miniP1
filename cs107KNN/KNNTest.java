@@ -11,8 +11,8 @@ public class KNNTest {
 		//quicksortTest(); 
 		//indexOfMaxTest();
 		//electLabelTest(); 
-		knnClassifyTest();  
-		//accuracyTest(); 
+		//knnClassifyTest();  
+		accuracyTest(); 
 	}
 
 	public static void extractIntTest() {
@@ -118,22 +118,46 @@ public class KNNTest {
 		byte[][][] imagesTest = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10k_images_test"));
 		byte[] labelsTest = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10k_labels_test"));
 
-		byte[] predictions = new byte[60];
-		for (int i = 0; i < 60; i++) {
+		byte[] predictions = new byte[200];
+		for (int i = 0; i < 200; i++) {
 			predictions[i] = KNN.knnClassify(imagesTest[i], imagesTrain, labelsTrain, 7);
 		}
-		Helpers.show("Test predictions", imagesTest, predictions, labelsTest, 10, 6);
+		Helpers.show("Test predictions", imagesTest, predictions, labelsTest, 10, 20);
 	}
 
 
 	public static void accuracyTest() {
-		System.out.println("=== Test prÃ©cision ===");
+		System.out.println("=== Test précision ===");
 		byte[] a = new byte[] {1, 1, 1, 1};
 		byte[] b = new byte[] {1, 1, 1, 9};
 
 
-		System.out.println("PrÃ©cision calculÃ©e: " + KNN.accuracy(a, b));
-		System.out.println("PrÃ©cision attendue:  0.75");
+		System.out.println("Précision calculée: " + KNN.accuracy(a, b));
+		System.out.println("Précision attendue:  0.75");
+	}
+	public static void finalTest() {
+			System.out.println("=== Test final ===");
+			byte[][][] imagesTrain = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10-per-digit_images_train"));
+			byte[] labelsTrain = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10-per-digit_labels_train"));
+
+			byte[][][] imagesTest = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10k_images_test"));
+			byte[] labelsTest = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10k_labels_test"));
+
+			int TESTS = 1000;
+			int K = 7;
+			
+			byte[] predictions = new byte[TESTS];
+			long start = System.currentTimeMillis(); 
+			for (int i = 0; i < TESTS; i++) {
+				predictions[i] = KNN.knnClassify(imagesTest[i], imagesTrain, labelsTrain, K);
+			}
+			
+			long end = System.currentTimeMillis(); 
+			double time = (end - start) / 1000d; 
+			System.out.println("Accuracy = " + KNN.accuracy(predictions, Arrays.copyOfRange(labelsTest, 0, TESTS)) + " %"); 
+			System.out.println("Time = " + time + " seconds"); 
+			System.out.println("Time per test image = " + (time / TESTS));
+
 	}
 }
 
