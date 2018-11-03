@@ -26,28 +26,46 @@ public class KMeansClustering {
 		Helpers.writeBinaryFile("datasets/reduced10Kto1K_labels", encodeIDXlabels(reducedLabels));
 	}
 
-    /**
-     * @brief Encodes a tensor of images into an array of data ready to be written on a file
-     * 
-     * @param images the tensor of image to encode
-     * 
-     * @return the array of byte ready to be written to an IDX file
-     */
+/*****************************************************************************/
+	
 	public static byte[] encodeIDXimages(byte[][][] images) {
-		// TODO: ImplÃ©menter
-		return null;
+		//on suppose que la données est correcte !!!!!!!!
+		int nbImages = images.length;			//nb image
+		int nbLignes = images[0].length;		//nb lignes/image
+		int nbColonnes = images[0][0].length; 	//nb colonnes/image
+		
+		byte[] data = new byte[16 + nbImages*nbLignes*nbColonnes]; //taille de la donnée
+		
+		encodeInt(2051, data, 0);//nb magique des images 2051
+		encodeInt(nbImages, data, 4);
+		encodeInt(nbLignes, data, 8);
+		encodeInt(nbColonnes, data, 12);//intitulé du fichier IDX !
+		
+		for (int i = 0; i < nbImages; ++i) {
+			for (int j = 0; j < nbLignes; ++j) {
+				for (int k = 0; k < nbColonnes; ++k) {
+					data[16 + i * nbLignes * nbColonnes + j * nbColonnes + k] = (byte) ((images[i][j][k] & 0xFF) + 128);
+				} // on redécale tout de 128 car dans IDX on "lit" comme unsigned byte
+			}
+		}
+		return data;
 	}
-
-    /**
-     * @brief Prepares the array of labels to be written on a binary file
-     * 
-     * @param labels the array of labels to encode
-     * 
-     * @return the array of bytes ready to be written to an IDX file
-     */
+	
+	/*****************************************************************************/
+   
 	public static byte[] encodeIDXlabels(byte[] labels) {
-		// TODO: ImplÃ©menter
-		return null;
+		// on suppose que la données est correcte !!!!!!!!
+		int nbEtiq = labels.length; // nb étiquettes
+
+		byte[] data = new byte[8 + nbEtiq];// taille de la donnée
+
+		encodeInt(2049, data, 0);// nb magique des étiquettes 2049
+		encodeInt(nbEtiq, data, 4);
+
+		for (int i = 0; i < nbEtiq; ++i) {
+			data[8 + i] = labels[i];
+		}
+		return data;
 	}
 
     /**
@@ -60,7 +78,17 @@ public class KMeansClustering {
      * the others will follow at offset + 1, offset + 2, offset + 3
      */
 	public static void encodeInt(int n, byte[] destination, int offset) {
-		// TODO: ImplÃ©menter
+		//on suppose que destination est initialisé !
+	
+		byte b1 = (byte) ((n >> 24) & 0xFF);//on applique quand même le masque pour b1
+		byte b2 = (byte) ((n >> 16) & 0xFF);//car si c'est negatif -> que des 1 avant
+		byte b3 = (byte) ((n >> 8 ) & 0xFF);
+		byte b4 = (byte) ((n	  ) & 0xFF);// n = b1 | b2 | b3 | b4
+
+		destination[offset + 0] = b1;
+		destination[offset + 1] = b2;
+		destination[offset + 2] = b3;
+		destination[offset + 3] = b4;//assistante a dit qu'on ne décale pas
 	}
 
     /**

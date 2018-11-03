@@ -105,22 +105,22 @@ public class Helpers {
         return "" + Integer.parseUnsignedInt(bits, 2);
     }
 
-    /**
-     * @brief Displays a grid with the provided images. Only rows * columns images
-     *        will be displayed (even if more are provided)
-     *
-     * @param title   the title of the window
-     * @param tensor  the tensor containing the images to draw
-     * @param rows    the number of rows of images in the grid
-     * @param columns the number of rows of images in the grid
-     */
-    public static void show(String title, byte[][][] tensor, int rows, int columns) {
-        JFrame frame = initFrame(rows, columns, title);
-        for (int i = 0; i < Math.min(rows * columns, tensor.length); i++) {
-            frame.add(imagePanel(toBufferedImage(tensor[i])));
-        }
-        drawFrame(frame);
-    }
+	/**
+	 * @brief Displays a grid with the provided images. Only rows * columns images
+	 *        will be displayed (even if more are provided)
+	 *
+	 * @param title   the title of the window
+	 * @param tensor  the tensor containing the images to draw
+	 * @param rows    the number of rows of images in the grid
+	 * @param columns the number of rows of images in the grid
+	 */
+	public static void show(String title, byte[][][] tensor, int rows, int columns) {
+		JFrame frame = initFrame(rows, columns, title);
+		for (int i = 0; i < Math.min(rows * columns, tensor.length); i++) {
+			frame.add(imagePanel(toBufferedImage(tensor[i])));
+		}
+		drawFrame(frame);
+	}
 
     /**
      * @brief Displays a grid with the provided images and their labels. Only rows *

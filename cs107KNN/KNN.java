@@ -4,10 +4,20 @@ import java.util.Arrays;
 
 public class KNN {
 	public static void main(String[] args) {
-		KNNTest.finalTest();
+		//Test 2: byte array with 2 images of size 2x2
+
+		byte[] bArray2 = new byte[] {0,0,8,3, 0,0,0,2, 0,0,0,2, 0,0,0,2, 1,1,1,1, 0,0,0,0};
+		byte[][][] tensor2 = parseIDXimages(bArray2);
+
+		byte[][][] expectedTensor2 = new byte[][][] {
+		            { {-127,-127}, {-127,-127} }, //image 0
+		            { {-128,-128}, {-128,-128} }  //image 1            
+		};
+		System.out.println(Arrays.deepEquals(tensor2, expectedTensor2));	
 	}
 
 	/**************************************************************************************/
+	
 	public static int extractInt(byte b31ToB24, byte b23ToB16, byte b15ToB8, byte b7ToB0) {	
 		int a = (b31ToB24& 0xFF)<<24 	;			//on utilise pas de String car ça prend trop de place
 		int b = (b23ToB16& 0xFF)<<16 	;			//l'opérateur <<n décale tout les 1 de ta bitestring vers la gauche
@@ -16,7 +26,9 @@ public class KNN {
 
 		return (a | b | c | d);						//optimisation avec le bitwise "ou"
 	}
+	
 	/**************************************************************************************/
+	
 	public static byte[][][] parseIDXimages(byte[] data) {
 		if (data == null)		 { 	return null;	};
 		if (data.length < 16)	 {	return null;	};							//on vérifie qu'on ne fera pas de 
@@ -41,6 +53,7 @@ public class KNN {
 	}
 
 	/**************************************************************************************/
+
 	public static byte[] parseIDXlabels(byte[] data) {
 		if (data == null)		 { 	return null;	};							//on vérifie qu'on ne fera pas de 
 		if (data.length < 8)	 {	return null;	};							//segmentation fault
@@ -50,13 +63,15 @@ public class KNN {
 		int nbEtiq = extractInt(data [4],data [5],data [6],data [7]);			//nb étiquettes
 		//pour cette vérif il y a un vrai problème que fait on ?
 		assert (data.length == (8 + nbEtiq) );									//on vérifie que la donnée est correcte
-		byte [] tab = new byte	[nbEtiq]; 
-		for(int i=0; i < nbEtiq; ++i) {  
-			tab[i] = data[8+i];
+		byte[] tab = new byte[nbEtiq];
+		for (int i = 0; i < nbEtiq; ++i) {
+			tab[i] = data[8 + i];
 		}
-		return tab; 
+		return tab;
 	}
-/*****************************************************************************************/
+
+	/*****************************************************************************************/
+	
 	public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
 		//pas de vérification des tableaux selon l'assistant principal
 	        float Distance = 0 ;
@@ -74,26 +89,28 @@ public class KNN {
 	        
 	        return Distance ;
 	    }
-/*****************************************************************************************/
-    public static float moyenne(byte[][] a) {			// Calcul de la moyenne des valeurs des pixels de 2 images
+
+	/*****************************************************************************************/
+    
+	public static float moyenne(byte[][] a) {			// Calcul de la moyenne des valeurs des pixels de 2 images
         float pixels = 0 ;
         
         // somme des valeurs des pixels
-        
-            for (int i =0 ; i < a.length ; i++) {
-            
-                for (int j =0 ; j < a[i].length ; j++) {
-                
-                    pixels = pixels + a[i][j] ;
-                }
-            
-            }
-        
-            													//division par le nombre de pixels   
-        return (pixels / (a.length * a[0].length));				//pas besoin de créer une variable float
+
+		for (int i = 0; i < a.length; i++) {
+
+			for (int j = 0; j < a[i].length; j++) {
+
+				pixels = pixels + a[i][j];
+			}
+
+		}
+        //division par le nombre de pixels -> pas besoin de créer une variable float
+        return (pixels / (a.length * a[0].length));	
           
     }
-/*****************************************************************************************/
+
+	/*****************************************************************************************/
 
     public static float invertedSimilarity(byte[][] a, byte[][] b) {
 		//pas de vérification des tableaux selon l'assistant principal
@@ -141,15 +158,17 @@ public class KNN {
         return SI;												//optimisation
     }
 
-/********************************************************************************************/
-	public static int[] quicksortIndices(float[] values) {
+
+    /********************************************************************************************/
+	
+    public static int[] quicksortIndices(float[] values) {
 		//pas de vérification des tableaux selon l'assistant principal
 		int low = 0;
 		int high = values.length -1;
 		
 		int[] indices = new int[values.length];
 		for(int i = 0; i<values.length ; ++i) {
-			indices[i]=i;									//initialisation du tableau {0,1,2....}
+			indices[i]=i;						//initialisation du tableau {0,1,2....}
 		}
 	
 		quicksortIndices(values, indices, low, high); 	//on fait appelle à l'autre fonction : c'est plus compacte	
@@ -159,7 +178,8 @@ public class KNN {
 		//plus du hasard qu'autre chose
 	}
 
-/***************************************************************************************************/
+
+    /***************************************************************************************************/
 	
 	public static void quicksortIndices(float[] values, int[] indices, int low, int high) {
 		//pas de vérification des tableaux selon l'assistant principal
@@ -189,7 +209,9 @@ public class KNN {
 		}
 	}
 
-/*********************************************************************************************/
+
+	/*********************************************************************************************/
+	
 	public static void swap(int i, int j, float[] values, int[] indices) {
 		//pas de vérification des tableaux selon l'assistant principal
 		float a = values[i];
@@ -200,7 +222,9 @@ public class KNN {
 		indices[i] = indices[j];
 		indices[j] = b;
 	}
-/*********************************************************************************************/
+
+	/*********************************************************************************************/
+	
 	public static int indexOfMax(int[] array) {
 		//pas de vérification des tableaux selon l'assistant principal
 		int index=0;
@@ -213,7 +237,8 @@ public class KNN {
 		}
 		return index;
 	}
-/*********************************************************************************************/
+
+	/*********************************************************************************************/
 
 	public static byte electLabel(int[] sortedIndices, byte[] labels, int k) {
 		int[] kvotes = new int[10];						//c'est un tableau d'int car peut être qu'il y aura beaucoup
@@ -225,7 +250,8 @@ public class KNN {
 		return (byte) indexOfMax(kvotes);				//on veut l'étiquette du + grand index
 		//je pense qu'on peut faire mieux que ça !
 	}
-/*********************************************************************************************/
+
+	/*********************************************************************************************/
 
 	public static byte knnClassify(byte[][] image, byte[][][] trainImages, byte[] trainLabels, int k) {
 		//pas de vérification des tableaux selon l'assistant principal
@@ -234,33 +260,30 @@ public class KNN {
 		for(int i=0; i< trainImages.length; ++i) {
 			values[i] = invertedSimilarity(image, trainImages[i]);		//nous créons le tableau des distances
 		}
-		
+
 		return electLabel(quicksortIndices(values), trainLabels, k);
-		//	public static byte electLabel(int[] sortedIndices, byte[] labels, int k) {
+		// public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
+		// public static float invertedSimilarity(byte[][] a, byte[][] b) {
 
-		//public static int[] quicksortIndices(float[] values) {
-		
-		//public static float squaredEuclideanDistance(byte[][] a, byte[][] b) {
+	}
 
-		//public static float invertedSimilarity(byte[][] a, byte[][] b) {
-		
+	/*********************************************************************************************/
+
+	public static double accuracy(byte[] predictedLabels, byte[] trueLabels) {
+
+		double n = predictedLabels.length;
+		double accuracy = 0.;
+
+		for (int i = 0; i < n; i++) {
+			if (predictedLabels[i] == trueLabels[i]) {
+				accuracy = accuracy + 1;
+			}
+
 		}
-/*********************************************************************************************/
-public static double accuracy(byte[] predictedLabels, byte[] trueLabels) {
-        
-        double n = predictedLabels.length;
-        double accuracy =0. ;
-        
-        for (int i = 0 ; i < n ; i++) {
-            if ( predictedLabels[i] == trueLabels[i]) {
-                accuracy = accuracy +1 ;
-            }
-            
-        }
-        accuracy = accuracy /n ; 
-        
-        return accuracy ;
-    }
+		accuracy = accuracy / n;
+
+		return accuracy;
+	}
 }
 
 

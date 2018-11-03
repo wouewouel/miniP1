@@ -4,50 +4,34 @@ import java.util.Arrays;
 
 public class KNNTest {
 	public static void main(String[] args) {
-		//extractIntTest();
-		//parsingTest();
-		//squaredEuclideanDistanceTest();
-		//invertedSimilarityTest();
-		//quicksortTest(); 
-		//indexOfMaxTest();
-		//electLabelTest(); 
-		//knnClassifyTest();  
-		accuracyTest(); 
+		// extractIntTest();
+		// parsingTest();
+		// squaredEuclideanDistanceTest();
+		// invertedSimilarityTest();
+		// quicksortTest();
+		// indexOfMaxTest();
+		// electLabelTest();
+		// knnClassifyTest();
+		accuracyTest();
 	}
 
 	public static void extractIntTest() {
 		byte b1 = 40; // 00101000
 		byte b2 = 20; // 00010100
-		byte b3 = 10; // 00001010 
+		byte b3 = 10; // 00001010
 		byte b4 = 5; // 00000101
 
 		// [00101000 | 00010100 | 00001010 | 00000101] = 672401925
-		
-		String expected = Helpers.byteToBinaryString(b1) +
-			Helpers.byteToBinaryString(b2) +
-			Helpers.byteToBinaryString(b3) +
-			Helpers.byteToBinaryString(b4);
+
+		String expected = Helpers.byteToBinaryString(b1) + Helpers.byteToBinaryString(b2)
+				+ Helpers.byteToBinaryString(b3) + Helpers.byteToBinaryString(b4);
 
 		int obtained = KNN.extractInt(b1, b2, b3, b4);
 
 		System.out.println("=== Test extractInt ===");
-		System.out.println("Entier attendu:\t \t " + Integer.parseInt(expected,2));
-		System.out.println("extractInt produit:\t " + obtained );//"00101000000101000000101000000101"
-//		byte b1 = 40; // 00101000
-//		byte b2 = 120; // 00010100
-//		byte b3 = 70; // 00001010
-//		byte b4 = -117; // 00000101
-//
-//		String expected = Helpers.byteToBinaryString(b1) +
-//			Helpers.byteToBinaryString(b2) +
-//			Helpers.byteToBinaryString(b3) +
-//			Helpers.byteToBinaryString(b4);
-//
-//		int obtained = KNN.extractInt(b1, b2, b3, b4);
-//
-//		System.out.println("=== Test extractInt ===");
-//		System.out.println("Entier attendu:\t \t " + Integer.parseInt(expected, 2));
-//		System.out.println("extractInt produit:\t " + obtained);
+		System.out.println("Entier attendu:\t \t " + Integer.parseInt(expected, 2));
+		System.out.println("extractInt produit:\t " + obtained);// "00101000000101000000101000000101"
+
 	}
 
 	public static void parsingTest() {
@@ -62,11 +46,10 @@ public class KNNTest {
 		Helpers.show("Test parsing", images, labels, 10, 10);
 	}
 
-
 	public static void squaredEuclideanDistanceTest() {
 		System.out.println("=== Test distance euclidienne ===");
-		byte[][] a = new byte[][] {{1, 1}, {2, 2}};
-		byte[][] b = new byte[][] {{3, 3}, {4, 4}};
+		byte[][] a = new byte[][] { { 1, 1 }, { 2, 2 } };
+		byte[][] b = new byte[][] { { 3, 3 }, { 4, 4 } };
 
 		System.out.println("Distance calculÃ©e: " + KNN.squaredEuclideanDistance(a, b));
 		System.out.println("Distance attendue: 16.0");
@@ -74,8 +57,8 @@ public class KNNTest {
 
 	public static void invertedSimilarityTest() {
 		System.out.println("=== Test similarité inversée ===");
-		byte[][] a = new byte[][] {{1, 1}, {1, 2}};
-		byte[][] b = new byte[][] {{50, 50}, {50, 100}};
+		byte[][] a = new byte[][] { { 1, 1 }, { 1, 2 } };
+		byte[][] b = new byte[][] { { 50, 50 }, { 50, 100 } };
 
 		System.out.println("Distance calculée: " + KNN.invertedSimilarity(a, b));
 		System.out.println("Distance attendue: 0.0");
@@ -83,7 +66,7 @@ public class KNNTest {
 
 	public static void quicksortTest() {
 		System.out.println("=== Test quicksort ===");
-		float[] data = new float[] {3, 1, -1, 0, 9};
+		float[] data = new float[] { 3, 1, -1, 0, 9 };
 		int[] result = KNN.quicksortIndices(data);
 
 		System.out.println("Indices triés: " + Arrays.toString(result));
@@ -91,7 +74,7 @@ public class KNNTest {
 
 	public static void indexOfMaxTest() {
 		System.out.println("=== Test indexOfMax ===");
-		int[] data = new int[]{10, 5, 10, 1};
+		int[] data = new int[] { 10, 5, 10, 1 };
 
 		int indexOfMax = KNN.indexOfMax(data);
 		System.out.println("Indices: [0, 1, 2, 3]");
@@ -99,11 +82,10 @@ public class KNNTest {
 		System.out.println("L'indice de l'élément maximal est: " + indexOfMax);
 	}
 
-
 	public static void electLabelTest() {
 		System.out.println("=== Test electLabel ===");
-		int[] sortedIndices = new int[]{0, 3, 2, 1};
-		byte[] labels = new byte[]{2, 1, 1, 2};
+		int[] sortedIndices = new int[] { 0, 3, 2, 1 };
+		byte[] labels = new byte[] { 2, 1, 1, 2 };
 		int k = 3;
 
 		System.out.println("Etiquette votée: \t " + KNN.electLabel(sortedIndices, labels, k));
@@ -125,39 +107,37 @@ public class KNNTest {
 		Helpers.show("Test predictions", imagesTest, predictions, labelsTest, 10, 20);
 	}
 
-
 	public static void accuracyTest() {
 		System.out.println("=== Test précision ===");
-		byte[] a = new byte[] {1, 1, 1, 1};
-		byte[] b = new byte[] {1, 1, 1, 9};
-
+		byte[] a = new byte[] { 1, 1, 1, 1 };
+		byte[] b = new byte[] { 1, 1, 1, 9 };
 
 		System.out.println("Précision calculée: " + KNN.accuracy(a, b));
 		System.out.println("Précision attendue:  0.75");
 	}
+
 	public static void finalTest() {
-			System.out.println("=== Test final ===");
-			byte[][][] imagesTrain = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10-per-digit_images_train"));
-			byte[] labelsTrain = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10-per-digit_labels_train"));
+		System.out.println("=== Test final ===");
+		byte[][][] imagesTrain = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10-per-digit_images_train"));
+		byte[] labelsTrain = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10-per-digit_labels_train"));
 
-			byte[][][] imagesTest = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10k_images_test"));
-			byte[] labelsTest = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10k_labels_test"));
+		byte[][][] imagesTest = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10k_images_test"));
+		byte[] labelsTest = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10k_labels_test"));
 
-			int TESTS = 1000;
-			int K = 7;
-			
-			byte[] predictions = new byte[TESTS];
-			long start = System.currentTimeMillis(); 
-			for (int i = 0; i < TESTS; i++) {
-				predictions[i] = KNN.knnClassify(imagesTest[i], imagesTrain, labelsTrain, K);
-			}
-			
-			long end = System.currentTimeMillis(); 
-			double time = (end - start) / 1000d; 
-			System.out.println("Accuracy = " + KNN.accuracy(predictions, Arrays.copyOfRange(labelsTest, 0, TESTS)) + " %"); 
-			System.out.println("Time = " + time + " seconds"); 
-			System.out.println("Time per test image = " + (time / TESTS));
+		int TESTS = 1000;
+		int K = 7;
+
+		byte[] predictions = new byte[TESTS];
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < TESTS; i++) {
+			predictions[i] = KNN.knnClassify(imagesTest[i], imagesTrain, labelsTrain, K);
+		}
+
+		long end = System.currentTimeMillis();
+		double time = (end - start) / 1000d;
+		System.out.println("Accuracy = " + KNN.accuracy(predictions, Arrays.copyOfRange(labelsTest, 0, TESTS)) + " %");
+		System.out.println("Time = " + time + " seconds");
+		System.out.println("Time per test image = " + (time / TESTS));
 
 	}
 }
-
