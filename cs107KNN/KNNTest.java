@@ -12,7 +12,8 @@ public class KNNTest {
 		// indexOfMaxTest();
 		// electLabelTest();
 		// knnClassifyTest();
-		accuracyTest();
+		//accuracyTest();
+		finalTest();
 	}
 
 	public static void extractIntTest() {
@@ -118,8 +119,8 @@ public class KNNTest {
 
 	public static void finalTest() {
 		System.out.println("=== Test final ===");
-		byte[][][] imagesTrain = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10-per-digit_images_train"));
-		byte[] labelsTrain = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10-per-digit_labels_train"));
+		byte[][][] imagesTrain = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/1000-per-digit_images_train"));
+		byte[] labelsTrain = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/1000-per-digit_labels_train"));
 
 		byte[][][] imagesTest = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/10k_images_test"));
 		byte[] labelsTest = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/10k_labels_test"));

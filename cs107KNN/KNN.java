@@ -82,13 +82,12 @@ public class KNN {
 	                
 	                Distance = (a[i][j] - b[i][j])*(a[i][j] - b[i][j]) + Distance ;	
 	                //la somme entre byte est directement convertie en int donc pas de débordement #koul 
-	            }    
-	            
-	        }
-	        
-	        
-	        return Distance ;
-	    }
+			}
+
+		}
+
+		return Distance;
+	}
 
 	/*****************************************************************************************/
     
@@ -119,13 +118,18 @@ public class KNN {
         float denompart1 = 0 ;
         float denompart2 =0 ;
         
-        // calcul des 2 facteurs du denominateur
+        float numerateur = 0;
+
         for(int i =0 ; i < a.length ; ++i) {
             
             for(int j=0 ; j < a[i].length ; j++) {
                 
+            	// calcul des 2 facteurs du denominateur
                 denompart1 = denompart1 + (a[i][j] - A)*(a[i][j] - A);
                 denompart2 = denompart2 + (b[i][j] - B)*(b[i][j] - B);
+                
+                // calcul du numerateur
+                numerateur = numerateur + (a[i][j] - A)*(b[i][j] - B) ;
             }
             
         }
@@ -136,26 +140,10 @@ public class KNN {
             if (denominateur ==0) {
                 return 2;
             }
-        
-        float numerateur = 0;
-        
-        // calcul du numerateur
-        
-        for (int i =0 ; i < a.length ; i++) {
-            
-            for (int j =0 ; j< a[i].length ; j++) {
-                
-                numerateur = numerateur + (a[i][j] - A)*(b[i][j] - B) ;
-                
-            }
-            
-        }
-         
+ 
         // calcul total
-        
-        float SI = 1 - (numerateur / denominateur) ;
-        
-        return SI;												//optimisation
+           
+        return 1 - (numerateur / denominateur) ;												//optimisation
     }
 
 
@@ -230,7 +218,7 @@ public class KNN {
 		int index=0;
 		int max	=array[0];
 		for (int i = 0; i< array.length ; ++i ) {
-			if( array[i]>max) {							// pas >= car on prend la première dans l'ordre
+			if( array[i]>max) {				// pas >= car on prend la première dans l'ordre
 				index = i;
 				max = array[i];
 			}
