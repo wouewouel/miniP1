@@ -10,9 +10,8 @@ public class KMeansClustering {
 		int K = 5000;
 		int maxIters = 20;
 
-		// TODO: Adaptez les parcours
-		byte[][][] images = KNN.parseIDXimages(Helpers.readBinaryFile("TODO_remplacer/1000-per-digit_images_train"));
-		byte[] labels = KNN.parseIDXlabels(Helpers.readBinaryFile("TODO_remplacer/1000-per-digit_labels_train"));
+		byte[][][] images = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/1000-per-digit_images_train"));
+		byte[] labels = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/1000-per-digit_labels_train"));
 
 		byte[][][] reducedImages = KMeansReduce(images, K, maxIters);
 
@@ -29,23 +28,23 @@ public class KMeansClustering {
 /*****************************************************************************/
 	
 	public static byte[] encodeIDXimages(byte[][][] images) {
-		//on suppose que la données est correcte !!!!!!!!
+		//on suppose que la donnees est correcte !!!!!!!!
 		int nbImages = images.length;			//nb image
 		int nbLignes = images[0].length;		//nb lignes/image
 		int nbColonnes = images[0][0].length; 	//nb colonnes/image
 		
-		byte[] data = new byte[16 + nbImages*nbLignes*nbColonnes]; //taille de la donnée
+		byte[] data = new byte[16 + nbImages*nbLignes*nbColonnes]; //taille de la donnee
 		
 		encodeInt(2051, data, 0);//nb magique des images 2051
 		encodeInt(nbImages, data, 4);
 		encodeInt(nbLignes, data, 8);
-		encodeInt(nbColonnes, data, 12);//intitulé du fichier IDX !
+		encodeInt(nbColonnes, data, 12);//intitule du fichier IDX !
 		
 		for (int i = 0; i < nbImages; ++i) {
 			for (int j = 0; j < nbLignes; ++j) {
 				for (int k = 0; k < nbColonnes; ++k) {
 					data[16 + i * nbLignes * nbColonnes + j * nbColonnes + k] = (byte) ((images[i][j][k] & 0xFF) + 128);
-				} // on redécale tout de 128 car dans IDX on "lit" comme unsigned byte
+				} // on redecale tout de 128 car dans IDX on "lit" comme unsigned byte
 			}
 		}
 		return data;
@@ -54,12 +53,12 @@ public class KMeansClustering {
 	/*****************************************************************************/
    
 	public static byte[] encodeIDXlabels(byte[] labels) {
-		// on suppose que la données est correcte !!!!!!!!
-		int nbEtiq = labels.length; // nb étiquettes
+		// on suppose que la donnees est correcte !!!!!!!!
+		int nbEtiq = labels.length; // nb etiquettes
 
-		byte[] data = new byte[8 + nbEtiq];// taille de la donnée
+		byte[] data = new byte[8 + nbEtiq];// taille de la donnee
 
-		encodeInt(2049, data, 0);// nb magique des étiquettes 2049
+		encodeInt(2049, data, 0);// nb magique des etiquettes 2049
 		encodeInt(nbEtiq, data, 4);
 
 		for (int i = 0; i < nbEtiq; ++i) {
@@ -78,9 +77,9 @@ public class KMeansClustering {
      * the others will follow at offset + 1, offset + 2, offset + 3
      */
 	public static void encodeInt(int n, byte[] destination, int offset) {
-		//on suppose que destination est initialisé !
+		//on suppose que destination est initialise !
 	
-		byte b1 = (byte) ((n >> 24) & 0xFF);//on applique quand même le masque pour b1
+		byte b1 = (byte) ((n >> 24) & 0xFF);//on applique quand meme le masque pour b1
 		byte b2 = (byte) ((n >> 16) & 0xFF);//car si c'est negatif -> que des 1 avant
 		byte b3 = (byte) ((n >> 8 ) & 0xFF);
 		byte b4 = (byte) ((n	  ) & 0xFF);// n = b1 | b2 | b3 | b4
@@ -88,7 +87,7 @@ public class KMeansClustering {
 		destination[offset + 0] = b1;
 		destination[offset + 1] = b2;
 		destination[offset + 2] = b3;
-		destination[offset + 3] = b4;//assistante a dit qu'on ne décale pas
+		destination[offset + 3] = b4;//assistante a dit qu'on ne decale pas
 	}
 
     /**
@@ -121,8 +120,15 @@ public class KMeansClustering {
 
 		return centroids;
 	}
-
-   /**
+	
+	/**********************************************************************************/
+	private static double distToRepresentant(byte[][] image, byte[][] representant) {
+		return Math.sqrt(KNN.squaredEuclideanDistance(image, representant));
+		// necessaire de faire la racine ?
+	}
+	/**********************************************************************************/
+	
+	/**
      * @brief Assigns each image to the cluster whose centroid is the closest.
      * It modifies.
      * 
@@ -132,9 +138,24 @@ public class KMeansClustering {
      *  if j is at position i, then image i belongs to cluster j
      */
 	public static void recomputeAssignments(byte[][][] tensor, byte[][][] centroids, int[] assignments) {
+		//on suppose que les donnees sont ok
+		for(int index=0; index<tensor[0].length; ++index) {
+			double distance = Double.MAX_VALUE;
+			double newdistance = 0d;
+			for(int i=0; i< centroids[0].length; ++i) {
+				newdistance = distToRepresentant(tensor[index], centroids[i]);
+				if( newdistance < distance ) {	
+					//on peut mettre <= mais peu probable qu'une image soit a egale distance de 2 centroids
+					assignments[index]=i;
+					distance = newdistance;
+				}
+			}
+		}
 	}
 
-    /**
+	/******************************************************************************/
+    
+	/**
      * @brief Computes the centroid of each cluster by averaging the images in the cluster
      * 
      * @param tensor the tensor of images to cluster
@@ -143,8 +164,77 @@ public class KMeansClustering {
      *  if j is at position i, then image i belongs to cluster j
      */
 	public static void recomputeCentroids(byte[][][] tensor, byte[][][] centroids, int[] assignments) {
-	}
+		// on suppose donees ok
 
+		ArrayList<ArrayList<byte[][]>> img = new ArrayList<ArrayList<byte[][]>>();
+		ArrayList<Byte> chiffrecluster = new ArrayList<Byte>();
+
+		organizeCluster(tensor, assignments, img, chiffrecluster);
+		for (int i = 0; i < chiffrecluster.size(); ++i) {
+			centroids[chiffrecluster.get(i)] = newCentroid(img.get(i));
+		}
+	}
+	/******************************************************************/
+	private static byte[][] newCentroid(ArrayList<byte[][]> listIMG){
+		//on suppose donnees ok
+		int nbImages = listIMG.size();
+		int nbLines = listIMG.get(0).length;
+		int nbCols = listIMG.get(0)[0].length;
+		
+		byte[][] newcenter = new byte[nbLines][nbCols];
+		
+		for(int i=0; i< nbLines; ++i) {
+			for(int j=0; j< nbCols; ++j) {
+				float moy = 0;
+				for(int k=0; k<nbImages;++k) {
+					moy += listIMG.get(k)[i][j];
+				}
+				newcenter[i][j] = (byte) (moy/nbImages); 
+			}
+		}
+		return newcenter;
+	} 
+	/********************************************************************/
+	private static void organizeCluster(byte[][][] tensor, int[] assignments, 
+										ArrayList<ArrayList<byte[][]>> img, ArrayList<Byte> chiffrecluster) {
+		
+		boolean ajoutee = false;
+
+		for (int k = 0; k < assignments.length; k++) {
+
+			// on verifie si il existe deja un cluster
+			ajoutee = false;
+
+			for (int j = 0; j < chiffrecluster.size(); j++) {
+
+				/*
+				 * si le tableau chiffrecluster admet deja la valeur de assignment alors on
+				 * ajoute l'image a la colonne de rang chiffreclusetr[j] dans img
+				 */
+
+				if (assignments[k] == chiffrecluster.get(j)) {
+
+					img.get(chiffrecluster.get(j)).add(tensor[assignments[k]]);
+					ajoutee = true;
+				}
+
+				/*
+				 * si l'image n'admet pas encore de cluster alors on ajoute son chiifre a la
+				 * suite dans chiffrecluster et son image dans img
+				 */
+				if (!ajoutee) {
+
+					chiffrecluster.add((byte) assignments[k]);
+
+					img.add(new ArrayList<byte[][]>());
+
+					img.get(img.size() - 1).add(tensor[assignments[k]]); // il faut ajouter un tableau d'image
+				}
+
+			}
+
+		}
+	}
     /**
      * Initializes the centroids and assignments for the algorithm.
      * The assignments are initialized randomly and the centroids
