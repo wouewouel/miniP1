@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+
 public class Helpers {
     /**
      * @brief Reads all the bytes of a file

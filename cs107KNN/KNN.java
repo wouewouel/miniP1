@@ -80,7 +80,7 @@ public class KNN {
 	            
 	            for (int j =0 ; j < a[i].length ; j++) {		
 	                
-	                Distance = (a[i][j] - b[i][j])*(a[i][j] - b[i][j]) + Distance ;	
+	                Distance += (a[i][j] - b[i][j])*(a[i][j] - b[i][j]);	
 	                //la somme entre byte est directement convertie en int donc pas de debordement #koul 
 			}
 
@@ -91,53 +91,57 @@ public class KNN {
 
 	/*****************************************************************************************/
     
-	public static float moyenne(byte[][] a) {			// Calcul de la moyenne des valeurs des pixels de 2 images
+    public static float[] moyenne(byte[][] a, byte[][]b) {            
+    	// Calcul de la moyenne des valeurs des pixels de 2 images
+		// un tableau de double ralentissait l'execution bizarrement, peut etre a cause
+		// du transtipage lors du calcul du numerateur et du denominateur...
         float pixels = 0 ;
-        
+        float pixels2 =0;
         // somme des valeurs des pixels
 
-		for (int i = 0; i < a.length; i++) {
+        for (int i = 0; i < a.length; i++) {
 
-			for (int j = 0; j < a[i].length; j++) {
+            for (int j = 0; j < a[i].length; j++) {
 
-				pixels += a[i][j];
-			}
+                pixels += a[i][j];
+                pixels2 += b[i][j];
+            }
 
-		}
+        }
         //division par le nombre de pixels -> pas besoin de creer une variable float
-        return (pixels / (a.length * a[0].length));	
-          
+        
+        float[] moyenne = {(pixels / (a.length * a[0].length)) , pixels2 /(b.length*b[0].length)};
+        return moyenne;    
     }
+
 
 	/*****************************************************************************************/
 
     public static float invertedSimilarity(byte[][] a, byte[][] b) {
 		//pas de verification des tableaux selon l'assistant principal
-        float A = moyenne(a);
-        float B = moyenne(b);
+        float[] MOY = moyenne(a,b);
+        float A = MOY[0];
+        float B = MOY[1];
         float denompart1 = 0 ;
         float denompart2 =0 ;
         
         float numerateur = 0;
-
         for(int i =0 ; i < a.length ; ++i) {
-            
-            for(int j=0 ; j < a[i].length ; j++) {
+            for(int j=0 ; j < a[i].length ; ++j) {
                 
             	// calcul des 2 facteurs du denominateur
-                denompart1 = denompart1 + (a[i][j] - A)*(a[i][j] - A);
-                denompart2 = denompart2 + (b[i][j] - B)*(b[i][j] - B);
+                denompart1 += (a[i][j] - A)*(a[i][j] - A);
+                denompart2 += (b[i][j] - B)*(b[i][j] - B);
                 
                 // calcul du numerateur
-                numerateur = numerateur + (a[i][j] - A)*(b[i][j] - B) ;
+                numerateur += (a[i][j] - A)*(b[i][j] - B) ;
             }
-            
         }
         
         // calcul du denominateur
         float denominateur = (float) Math.sqrt(denompart1 * denompart2);
         
-            if (denominateur ==0) {
+            if (denominateur == 0) {
                 return 2;
             }
  
@@ -234,7 +238,8 @@ public class KNN {
 			++ kvotes[labels[sortedIndices[i]]] ;		//on veut ce qu'il y a sur les k 1ere etiquettes triees
 		
 		}
-		return (byte) indexOfMax(kvotes);				//on veut l'etiquette du + grand index
+		return (byte) indexOfMax(kvotes);				
+		//on veut l'etiquette du + grand index
 		//je pense qu'on peut faire mieux que ca !
 	}
 
@@ -245,13 +250,13 @@ public class KNN {
 		float[] values = new float[trainImages.length];
 		
 		for(int i=0; i< trainImages.length; ++i) {
-			values[i] = invertedSimilarity(image, trainImages[i]);		//nous creons le tableau des distances
+			values[i] = squaredEuclideanDistance(image, trainImages[i]);		//nous creons le tableau des distances
 		}
-
-		return electLabel(quicksortIndices(values), trainLabels, k);
-		//  squaredEuclideanDistance
+		// on peut switcher la methode a utiliser :
+		// squaredEuclideanDistance
 		// invertedSimilarity
 
+		return electLabel(quicksortIndices(values), trainLabels, k);
 	}
 
 	/*********************************************************************************************/

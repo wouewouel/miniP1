@@ -7,17 +7,17 @@ import java.util.ArrayList;
 
 public class KMeansClustering {
 	public static void main(String[] args) {
-		int K = 5000;
+		int K = 1000;
 		int maxIters = 20;
 
 		byte[][][] images = KNN.parseIDXimages(Helpers.readBinaryFile("datasets/1000-per-digit_images_train"));
 		byte[] labels = KNN.parseIDXlabels(Helpers.readBinaryFile("datasets/1000-per-digit_labels_train"));
-
+		// 10 000 images et labels, pas 1000
 		byte[][][] reducedImages = KMeansReduce(images, K, maxIters);
 
 		byte[] reducedLabels = new byte[reducedImages.length];
 		for (int i = 0; i < reducedLabels.length; i++) {
-			reducedLabels[i] = KNN.knnClassify(reducedImages[i], images, labels, 5);
+			reducedLabels[i] = KNN.knnClassify(reducedImages[i], images, labels, 7);
 			System.out.println("Classified " + (i + 1) + " / " + reducedImages.length);
 		}
 
@@ -25,7 +25,7 @@ public class KMeansClustering {
 		Helpers.writeBinaryFile("datasets/reduced10Kto1K_labels", encodeIDXlabels(reducedLabels));
 	}
 
-/*****************************************************************************/
+	/*****************************************************************************/
 	
 	public static byte[] encodeIDXimages(byte[][][] images) {
 		//on suppose que la donnees est correcte !!!!!!!!
@@ -67,6 +67,7 @@ public class KMeansClustering {
 		return data;
 	}
 
+	/************************************************************************************/
     /**
      * @brief Decomposes an integer into 4 bytes stored consecutively in the destination
      * array starting at position offset
@@ -77,10 +78,10 @@ public class KMeansClustering {
      * the others will follow at offset + 1, offset + 2, offset + 3
      */
 	public static void encodeInt(int n, byte[] destination, int offset) {
-		//on suppose que destination est initialise !
+		//on suppose que destination est initialisee !
 	
-		byte b1 = (byte) ((n >> 24) & 0xFF);//on applique quand meme le masque pour b1
-		byte b2 = (byte) ((n >> 16) & 0xFF);//car si c'est negatif -> que des 1 avant
+		byte b1 = (byte) ((n >> 24) );		//on peux ne pas appliquer le masque pour b1
+		byte b2 = (byte) ((n >> 16) & 0xFF);//car l'operateur >> met des zeros avant
 		byte b3 = (byte) ((n >> 8 ) & 0xFF);
 		byte b4 = (byte) ((n	  ) & 0xFF);// n = b1 | b2 | b3 | b4
 
@@ -89,7 +90,7 @@ public class KMeansClustering {
 		destination[offset + 2] = b3;
 		destination[offset + 3] = b4;//assistante a dit qu'on ne decale pas
 	}
-
+	/************************************************************************************/
     /**
      * @brief Runs the KMeans algorithm on the provided tensor to return size elements.
      * 
@@ -122,11 +123,6 @@ public class KMeansClustering {
 	}
 	
 	/**********************************************************************************/
-	private static double distToRepresentant(byte[][] image, byte[][] representant) {
-		return Math.sqrt(KNN.squaredEuclideanDistance(image, representant));
-		// necessaire de faire la racine ?
-	}
-	/**********************************************************************************/
 	
 	/**
      * @brief Assigns each image to the cluster whose centroid is the closest.
@@ -138,15 +134,18 @@ public class KMeansClustering {
      *  if j is at position i, then image i belongs to cluster j
      */
 	public static void recomputeAssignments(byte[][][] tensor, byte[][][] centroids, int[] assignments) {
-		//on suppose que les donnees sont ok
-		for(int index=0; index<tensor[0].length; ++index) {
+		// on suppose que les donnees sont ok
+		for (int k = 0; k < tensor.length; ++k) {
+			//et pas tensor[0].length car on veut le nb d'images !
 			double distance = Double.MAX_VALUE;
-			double newdistance = 0d;
-			for(int i=0; i< centroids[0].length; ++i) {
-				newdistance = distToRepresentant(tensor[index], centroids[i]);
-				if( newdistance < distance ) {	
-					//on peut mettre <= mais peu probable qu'une image soit a egale distance de 2 centroids
-					assignments[index]=i;
+			float newdistance = 0;
+			for (int i = 0; i < centroids.length; ++i) {
+				// et pas centroids[0].length car on veut le nb de centroid !
+				newdistance = KNN.squaredEuclideanDistance(tensor[k], centroids[i]);
+				if (newdistance <= distance) {
+					// on peut mettre <= car peu probable qu'une image soit a egale distance de 2
+					// centroids
+					assignments[k] = i;
 					distance = newdistance;
 				}
 			}
@@ -165,21 +164,35 @@ public class KMeansClustering {
      */
 	public static void recomputeCentroids(byte[][][] tensor, byte[][][] centroids, int[] assignments) {
 		// on suppose donees ok
+		ArrayList<ArrayList<byte[][]>> clusters = new ArrayList<ArrayList<byte[][]>>();
+		ArrayList<Integer> indiceClusters = new ArrayList<Integer>();
+		// Pour simplifier, si un cluster reste vide, on ne modifiera pas son
+		// representant. D'ou le choix d'un tableau dynamique.
+		
+		indiceClusters.add(assignments[0]);
+		//indice du centroid le plus proche de la premiere image
+		
+		clusters.add(new ArrayList<byte[][]>());
+		clusters.get(0).add(tensor[0]);
+		// on met la premiere image dans le 1er cluster (celui dont le centroid est a la
+		// position assignments[0] )
 
-		ArrayList<ArrayList<byte[][]>> img = new ArrayList<ArrayList<byte[][]>>();
-		ArrayList<Byte> chiffrecluster = new ArrayList<Byte>();
+		//on initialise les tableaux pour que les iterations puissent commencer
+		//encore une fois on ne se preoccupe pas de savoir si la donnees est correcte !!!
 
-		organizeCluster(tensor, assignments, img, chiffrecluster);
-		for (int i = 0; i < chiffrecluster.size(); ++i) {
-			centroids[chiffrecluster.get(i)] = newCentroid(img.get(i));
+		organizeCluster(tensor, assignments, clusters, indiceClusters);
+
+		for (int i = 0; i < indiceClusters.size(); ++i) {
+			centroids[indiceClusters.get(i)] = newCentroid(clusters.get(i));
 		}
 	}
 	/******************************************************************/
-	private static byte[][] newCentroid(ArrayList<byte[][]> listIMG){
+	//methode auxiliaire qui recalcule le centroid d'un cluster
+	private static byte[][] newCentroid(ArrayList<byte[][]> cluster){
 		//on suppose donnees ok
-		int nbImages = listIMG.size();
-		int nbLines = listIMG.get(0).length;
-		int nbCols = listIMG.get(0)[0].length;
+		int nbImages = cluster.size();
+		int nbLines = cluster.get(0).length;
+		int nbCols = cluster.get(0)[0].length;
 		
 		byte[][] newcenter = new byte[nbLines][nbCols];
 		
@@ -187,7 +200,7 @@ public class KMeansClustering {
 			for(int j=0; j< nbCols; ++j) {
 				float moy = 0;
 				for(int k=0; k<nbImages;++k) {
-					moy += listIMG.get(k)[i][j];
+					moy += cluster.get(k)[i][j];
 				}
 				newcenter[i][j] = (byte) (moy/nbImages); 
 			}
@@ -195,46 +208,55 @@ public class KMeansClustering {
 		return newcenter;
 	} 
 	/********************************************************************/
+	//methode auxiliaire qui classe chaque image dans son cluster
 	private static void organizeCluster(byte[][][] tensor, int[] assignments, 
-										ArrayList<ArrayList<byte[][]>> img, ArrayList<Byte> chiffrecluster) {
+										ArrayList<ArrayList<byte[][]>> clusters, ArrayList<Integer> indiceClusters) {
 		
 		boolean ajoutee = false;
 
-		for (int k = 0; k < assignments.length; k++) {
+		for (int k = 1; k < assignments.length; k++) {
+			// on commence a 1 car la premiere image est deja dans le premier cluster et
+			// est associe au centroid a la position assignments[0]
 
-			// on verifie si il existe deja un cluster
 			ajoutee = false;
-
-			for (int j = 0; j < chiffrecluster.size(); j++) {
+						
+			for (int j = 0; ajoutee == false && j < indiceClusters.size() ; j++) {
 
 				/*
-				 * si le tableau chiffrecluster admet deja la valeur de assignment alors on
-				 * ajoute l'image a la colonne de rang chiffreclusetr[j] dans img
+				 * le fait de demander si ajoutee est faux permet de reduire le temps
+				 * d'execution
+				 * 
+				 * Si le tableau indiceClusters a deja la valeur de assignment[k] a sa position
+				 * j, alors on ajoute l'image numero k au j-ieme cluster du tableau clusters
 				 */
 
-				if (assignments[k] == chiffrecluster.get(j)) {
-
-					img.get(chiffrecluster.get(j)).add(tensor[assignments[k]]);
+				if (assignments[k] == indiceClusters.get(j)) {
+					// on verifie si le cluster associe a la k-ieme image exite deja dans notre
+					// tableau de clusters
+					clusters.get(j).add(tensor[k]);
 					ajoutee = true;
 				}
+			}
 
 				/*
-				 * si l'image n'admet pas encore de cluster alors on ajoute son chiifre a la
-				 * suite dans chiffrecluster et son image dans img
+				 * si le centroid associe a l'image k n'admet pas encore de cluster alors : 		
+				 * 1 - on cre un nouveau cluster dans notre tableau clusters, et on ajoute l'image
+				 * k a la premiere position de ce nouveau tableau
+				 * 2 - on ajoute l'indice de ce "nouveau" centroid au tableau indiceClusters
 				 */
-				if (!ajoutee) {
+			if (!ajoutee) {
 
-					chiffrecluster.add((byte) assignments[k]);
+				indiceClusters.add(assignments[k]);
 
-					img.add(new ArrayList<byte[][]>());
+				clusters.add(new ArrayList<byte[][]>());
 
-					img.get(img.size() - 1).add(tensor[assignments[k]]); // il faut ajouter un tableau d'image
-				}
-
+				clusters.get(clusters.size() - 1).add(tensor[k]); // il faut ajouter un tableau d'image
+				ajoutee = true;
 			}
 
 		}
 	}
+	/************************************************************************************/
     /**
      * Initializes the centroids and assignments for the algorithm.
      * The assignments are initialized randomly and the centroids
